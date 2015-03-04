@@ -1,57 +1,57 @@
 <?php
 /**
  * Response_inc.php provides additional data access classes for the SurveySez project
- * 
+ *
  * This file requires Survey_inc.php to access the original Survey, Question & Answer classes
- * 
- * Data access for several of the SurveySez pages are handled via Survey classes 
- * named Survey,Question & Answer, respectively.  These classes model the one to many 
- * relationships between their namesake database tables. 
  *
- * Version 2 introduces two new classes, the Response and Choice classes, and moderate 
- * changes to the existing classes, Survey, Question & Answer.  The Response class will 
- * inherit from the Survey Class (using the PHP extends syntax) and will be an elaboration 
- * on a theme.  
+ * Data access for several of the SurveySez pages are handled via Survey classes
+ * named Survey,Question & Answer, respectively.  These classes model the one to many
+ * relationships between their namesake database tables.
  *
- * An instance of the Response class will attempt to identify a SurveyID from the srv_responses 
- * database table, and if it exists, will attempt to create all associated Survey, Question & Answer 
+ * Version 2 introduces two new classes, the Response and Choice classes, and moderate
+ * changes to the existing classes, Survey, Question & Answer.  The Response class will
+ * inherit from the Survey Class (using the PHP extends syntax) and will be an elaboration
+ * on a theme.
+ *
+ * An instance of the Response class will attempt to identify a SurveyID from the srv_responses
+ * database table, and if it exists, will attempt to create all associated Survey, Question & Answer
  * objects, nearly exactly as the Survey object.
  *
  * @package SurveySez
  * @author William Newman
  * @version 2.0 2010/07/31
- * @link http://www.billnsara.com/advdb/  
+ * @link http://www.billnsara.com/advdb/
  * @license http://opensource.org/licenses/osl-3.0.php Open Software License ("OSL") v. 3.0
- * @see Survey_inc.php 
- * @see response_show.php 
+ * @see Survey_inc.php
+ * @see response_show.php
  * @todo none
  */
 
 /**
  * Response Class retrieves response info for an individual Survey
- * 
- * The constructor of the Response class inherits all data from an instance of 
- * the Survey class.  As such it has access to all Question class and the Answer class 
- * info. 
  *
- * Properties of the Survey class like Title, Description and TotalQuestions provide 
+ * The constructor of the Response class inherits all data from an instance of
+ * the Survey class.  As such it has access to all Question class and the Answer class
+ * info.
+ *
+ * Properties of the Survey class like Title, Description and TotalQuestions provide
  * summary information upon demand.
- * 
+ *
  * A response object (an instance of the Response class) can be created in this manner:
  *
  *<code>
  *$myResponse = new Response(1);
  *</code>
  *
- * In which one is the number of a valid Response in the database. 
+ * In which one is the number of a valid Response in the database.
  *
- * The showChoices() method of the Response object will access an array of choice 
+ * The showChoices() method of the Response object will access an array of choice
  * objects and only show answers to questions that match
  *
  * @see Survey
  * @see Question
  * @see Answer
- * @see Choice  
+ * @see Choice
  * @todo none
  */
 class Response extends Survey
@@ -63,12 +63,12 @@ class Response extends Survey
 	public $aChoice = Array(); # stores an array of choice objects
 	
 	/**
-	 * Constructor for Response class. 
+	 * Constructor for Response class.
 	 *
-	 * @param integer $id ID number of Response 
-	 * @return void 
+	 * @param integer $id ID number of Response
+	 * @return void
 	 * @todo none
-	 */ 
+	 */
     function __construct($id)
 	{
 		$this->ResponseID = (int)$id;
@@ -99,7 +99,7 @@ class Response extends Survey
 			{# must be choices
 			   while ($row = mysqli_fetch_array($result))
 			   {# load data into array of choices
-				   $this->aChoice[] = new Choice((int)$row['AnswerID'],(int)$row['QuestionID'],(int)$row['RQID']); 
+				   $this->aChoice[] = new Choice((int)$row['AnswerID'],(int)$row['QuestionID'],(int)$row['RQID']);
 			   }
 			@mysqli_free_result($result);
 			}
@@ -109,13 +109,13 @@ class Response extends Survey
 	/**
 	 * Reveals choices in the internal Array of Choice Objects
 	 *
-	 * The choice array identifies chosen ID numbers from answers.  
-	 * This function will echo only the chosen answers, not those unchosen. 
+	 * The choice array identifies chosen ID numbers from answers.
+	 * This function will echo only the chosen answers, not those unchosen.
 	 *
 	 * @param none
-	 * @return string prints data from Choice Array 
+	 * @return string prints data from Choice Array
 	 * @todo none
-	 */ 
+	 */
 	function showChoices()
 	{
 		foreach($this->aQuestion as $question)
@@ -141,13 +141,13 @@ class Response extends Survey
 
 /**
  * Choice Class stores data info for an individual Choice to an Answer
- * 
- * In the constructor an instance of the Response class creates multiple 
- * instances of the Choice class tacked to the Answer class to store 
+ *
+ * In the constructor an instance of the Response class creates multiple
+ * instances of the Choice class tacked to the Answer class to store
  * response data.
  *
  * @see Answer
- * @see Response 
+ * @see Response
  * @todo none
  */
 class Choice {
@@ -156,14 +156,14 @@ class Choice {
 	public $ChoiceID = 0; # ID of individual choice
 	
 	/**
-	 * Constructor for Choice class. 
+	 * Constructor for Choice class.
 	 *
-	 * @param integer $AnswerID ID number of associated answer 
+	 * @param integer $AnswerID ID number of associated answer
 	 * @param integer $QuestionID ID number of associated question
 	 * @param integer $RQID ID number of choice from srv_response_question table
-	 * @return void 
+	 * @return void
 	 * @todo none
-	 */ 
+	 */
     function __construct($AnswerID,$QuestionID,$RQID)
 	{# constructor sets stage by adding data to an instance of the object
 		$this->AnswerID = (int)$AnswerID;

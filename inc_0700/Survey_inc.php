@@ -1,64 +1,64 @@
 <?php
 /**
  * Survey_inc.php data access classes & other related code for SurveySez project
- * 
- * Data access for several of the SurveySez pages are handled via Survey classes 
- * named Survey,Question & Answer, respectively.  These classes model the one to many 
- * relationships between their namesake database tables. 
  *
- * Version 5 refactors the Result object and adds the showGraph() method to the 
- * Result class, to present a bar graph when showing results 
+ * Data access for several of the SurveySez pages are handled via Survey classes
+ * named Survey,Question & Answer, respectively.  These classes model the one to many
+ * relationships between their namesake database tables.
  *
- * Version 4 adds the capability to create a 'form' for taking a survey.  It also 
+ * Version 5 refactors the Result object and adds the showGraph() method to the
+ * Result class, to present a bar graph when showing results
+ *
+ * Version 4 adds the capability to create a 'form' for taking a survey.  It also
  * changes the question object to store the 'InputType', for example, 'radio'
  *
- * Version 3 introduces the Result class, and Tally class, which together allow us to 
+ * Version 3 introduces the Result class, and Tally class, which together allow us to
  * display all results (totaled responses) for a single Survey.
  *
- * Version 2 introduces two new classes, the Response and Choice classes, and moderate 
- * changes to the existing classes, Survey, Question & Answer.  The Response class will 
- * inherit from the Survey Class (using the PHP extends syntax) and will be an elaboration 
- * on a theme.  
+ * Version 2 introduces two new classes, the Response and Choice classes, and moderate
+ * changes to the existing classes, Survey, Question & Answer.  The Response class will
+ * inherit from the Survey Class (using the PHP extends syntax) and will be an elaboration
+ * on a theme.
  *
- * An instance of the Response class will attempt to identify a SurveyID from the srv_responses 
- * database table, and if it exists, will attempt to create all associated Survey, Question & Answer 
+ * An instance of the Response class will attempt to identify a SurveyID from the srv_responses
+ * database table, and if it exists, will attempt to create all associated Survey, Question & Answer
  * objects, nearly exactly as the Survey object.
  *
  * @package SurveySez
  * @author William Newman
  * @version 2.0 2010/08/16
- * @link http://www.billnsara.com/advdb/  
+ * @link http://www.billnsara.com/advdb/
  * @license http://opensource.org/licenses/osl-3.0.php Open Software License ("OSL") v. 3.0
  * @see survey_view.php
- * @see response_view.php 
+ * @see response_view.php
  */
- 
+
 /**
  * Survey Class retrieves data info for an individual Survey
- * 
- * The constructor an instance of the Survey class creates multiple instances of the 
+ *
+ * The constructor an instance of the Survey class creates multiple instances of the
  * Question class and the Answer class to store questions & answers data from the DB.
  *
- * Properties of the Survey class like Title, Description and TotalQuestions provide 
+ * Properties of the Survey class like Title, Description and TotalQuestions provide
  * summary information upon demand.
- * 
+ *
  * A survey object (an instance of the Survey class) can be created in this manner:
  *
  *<code>
  *$mySurvey = new Survey(1);
  *</code>
  *
- * In which one is the number of a valid Survey in the database. 
+ * In which one is the number of a valid Survey in the database.
  *
- * The showQuestions() method of the Survey object created will access an array of question 
- * objects and internally access a method of the Question class named showAnswers() which will 
+ * The showQuestions() method of the Survey object created will access an array of question
+ * objects and internally access a method of the Question class named showAnswers() which will
  * access an array of Answer objects to produce the visible data.
  *
  * @see Question
- * @see Answer 
+ * @see Answer
  * @todo none
  */
- 
+
 class Survey
 {
 	 public $SurveyID = 0;
@@ -66,22 +66,22 @@ class Survey
 	 public $Description = "";
 	 public $isValid = FALSE;
 	 public $TotalQuestions = 0; #stores number of questions
-	 public $TotalResponses = 0; # v5: stores number of responses	 
+	 public $TotalResponses = 0; # v5: stores number of responses	
 	 //protected $aQuestion = Array(); #stores an array of question objects - changed to protected in v2
 	 public $aQuestion = Array(); #stores an array of question objects - changed to public in v5
 
 	/**
-	 * Constructor for Survey class. 
+	 * Constructor for Survey class.
 	 *
 	 * @param integer $id The unique ID number of the Survey
-	 * @return void 
+	 * @return void
 	 * @todo none
-	 */ 
+	 */
     function __construct($id)
 	{#constructor sets stage by adding data to an instance of the object
 		$this->SurveyID = (int)$id;
 		if($this->SurveyID == 0){return FALSE;}
-		$iConn = IDB::conn(); #uses a singleton DB class to create a mysqli improved connection 
+		$iConn = IDB::conn(); #uses a singleton DB class to create a mysqli improved connection
 		
 		#get Survey data from DB - v5 adds TotalResponses
 		$sql = sprintf("select Title, Description, TotalResponses from " . PREFIX . "surveys Where SurveyID =%d",$this->SurveyID);
@@ -95,7 +95,7 @@ class Survey
 			{#dbOut() function is a 'wrapper' designed to strip slashes, etc. of data leaving db
 			     $this->Title = dbOut($row['Title']);
 			     $this->Description = dbOut($row['Description']);
-		         $this->TotalResponses = (int)$row['TotalResponses']; # v5: stores number of responses			     
+		         $this->TotalResponses = (int)$row['TotalResponses']; # v5: stores number of responses			
 			}
 		}
 		@mysqli_free_result($result); #free resources
@@ -113,14 +113,14 @@ class Survey
 				$this->aQuestion[] = new Question(dbOut($row['QuestionID']),dbOut($row['Question']),dbOut($row['Description']),$this->TotalQuestions,dbOut($row['InputType']));
 		   }
 		}
-		$this->TotalQuestions = count($this->aQuestion); #TotalQuestions derived above - consider deleting this line!  v2 
+		$this->TotalQuestions = count($this->aQuestion); #TotalQuestions derived above - consider deleting this line!  v2
 		@mysqli_free_result($result); #free resources
 		
-		#attempt to load all Answer objects into cooresponding Question objects 
-	    $sql = "select a.AnswerID, a.Answer, a.Description, a.QuestionID from  
-		" . PREFIX . "surveys s inner join " . PREFIX . "questions q on q.SurveyID=s.SurveyID 
-		inner join " . PREFIX . "answers a on a.QuestionID=q.QuestionID   
-		where s.SurveyID = %d   
+		#attempt to load all Answer objects into cooresponding Question objects
+	    $sql = "select a.AnswerID, a.Answer, a.Description, a.QuestionID from
+		" . PREFIX . "surveys s inner join " . PREFIX . "questions q on q.SurveyID=s.SurveyID
+		inner join " . PREFIX . "answers a on a.QuestionID=q.QuestionID
+		where s.SurveyID = %d
 		order by a.AnswerID asc";
 		$sql = sprintf($sql,$this->SurveyID); #process SQL
 		$result = mysqli_query($iConn,$sql) or die(trigger_error(mysqli_error($iConn), E_USER_ERROR));
@@ -136,7 +136,7 @@ class Survey
 						$question->TotalAnswers += 1;  #increment total number of answers
 						#create answer, and push onto stack!
 						$question->aAnswer[] = new Answer((int)$row['AnswerID'],dbOut($row['Answer']),dbOut($row['Description']));
-						break; 
+						break;
 					}
 				}	
 		   }
@@ -144,18 +144,18 @@ class Survey
 	}# end Survey() constructor
 	
 	/**
-	 * Reveals questions in internal Array of Question Objects 
+	 * Reveals questions in internal Array of Question Objects
 	 *
 	 * @param none
-	 * @return string prints data from Question Array 
+	 * @return string prints data from Question Array
 	 * @todo none
-	 */ 
+	 */
 	function showQuestions()
 	{
 		if($this->TotalQuestions > 0)
 		{#be certain there are questions
 			foreach($this->aQuestion as $question)
-			{#print data for each 
+			{#print data for each
 				echo $question->Number . ') '; # We're using new Number property instead of id - v2
 				echo $question->Text . ' ';
 				if($question->Description != ''){echo '(' . $question->Description . ')';}
@@ -169,25 +169,25 @@ class Survey
 	
 	/**
 	 * Allows read only access to Question Array
-	 * 
+	 *
 	 * Added in v3 - Result object
 	 *
 	 * @param none
-	 * @return array an array of Question objects 
+	 * @return array an array of Question objects
 	 * @todo none
-	 */ 
+	 */
 	function getQuestions()
 	{
 		return $this->aQuestion;
 	}# end getQuestions() method
 	
 		/**
-	 * Creates form for taking survey 
+	 * Creates form for taking survey
 	 *
 	 * @param none
-	 * @return none, prints form on page 
+	 * @return none, prints form on page
 	 * @todo none
-	 */ 
+	 */
 	function Form()
 	{
 		print '<form name="myform" action="' . THIS_PAGE . '" method="post">';
@@ -201,11 +201,11 @@ class Survey
 	}
 	
 	/**
-	 * Passes in a question to add input form objects 
-	 * to allow data insertion 
+	 * Passes in a question to add input form objects
+	 * to allow data insertion
 	 *
 	 * @param none
-	 * @return none, prints form objects on page 
+	 * @return none, prints form objects on page
 	 * @todo none
 	 */
 	private function createInput($question)
@@ -257,7 +257,7 @@ class Survey
 		$SurveyID = (int)$SurveyID; //cast to integer
 		if($SurveyID > 0)
 		{//now no SQL if number not above zero
-			$iConn = IDB::conn(); 
+			$iConn = IDB::conn();
 			$rowsql = "select count(*) as numrows from " . PREFIX . "responses where SurveyID=" .  $SurveyID;
 			$result  = mysqli_query($iConn,$rowsql) or die(trigger_error(mysqli_error($iConn), E_USER_ERROR));
 			$row     = mysqli_fetch_assoc($result) or die(trigger_error(mysqli_error($iConn), E_USER_ERROR));
@@ -285,7 +285,7 @@ class Survey
 			{// if error, roll back transaction
 				mysqli_rollback($iConn);
 				die(trigger_error("Error Entering Response: " . mysqli_error($iConn), E_USER_ERROR));
-			}  
+			}
 			
 			//retrieve responseid
 			$ResponseID = mysqli_insert_id($iConn); //get ID of last record inserted
@@ -294,7 +294,7 @@ class Survey
 			{// if error, roll back transaction
 				mysqli_rollback($iConn);
 				die(trigger_error("Error Retrieving ResponseID: " . mysqli_error($iConn), E_USER_ERROR));
-			} 
+			}
 	
 			//loop through and insert answers
 			foreach($_POST as $varName=> $value)
@@ -313,7 +313,7 @@ class Survey
 							{// if error, roll back transaction
 								mysqli_rollback($iConn);
 								die(trigger_error("Error Inserting Choice (array/checkbox): " . mysqli_error($iConn), E_USER_ERROR));
-							} 
+							}
 						}
 			 		}else{//not an array, so likely radio or select
 				 		$sql = "insert into " . PREFIX . "responses_answers(ResponseID,QuestionID,AnswerID) values($ResponseID,$QuestionID,$value)";
@@ -322,7 +322,7 @@ class Survey
 						{// if error, roll back transaction
 							mysqli_rollback($iConn);
 							die(trigger_error("Error Inserting Choice (single/radio): " . mysqli_error($iConn), E_USER_ERROR));
-						} 
+						}
 			 		}
 				 }
 			}
@@ -344,13 +344,13 @@ class Survey
 
 /**
  * Question Class stores data info for an individual Question
- * 
- * In the constructor an instance of the Survey class creates multiple 
- * instances of the Question class and the Answer class to store 
+ *
+ * In the constructor an instance of the Survey class creates multiple
+ * instances of the Question class and the Answer class to store
  * questions & answers.
  *
  * @see Survey
- * @see Answer 
+ * @see Answer
  * @todo none
  */
 class Question
@@ -363,14 +363,14 @@ class Question
 	 public $Number = 0; # number of current question in sequence - added in v2
 	public $InputType = ""; # radio, checkbox, etc. - added in v4
 	/**
-	 * Constructor for Question class. 
+	 * Constructor for Question class.
 	 *
-	 * @param integer $id ID number of question 
+	 * @param integer $id ID number of question
 	 * @param string $question The text of the question
 	 * @param string $description Additional description info
-	 * @return void 
+	 * @return void
      * @todo none
-	 */ 
+	 */
 	function __construct($id,$question,$description,$number,$inputtype)
 	{#constructor sets stage by adding data to an instance of the object
 		$this->QuestionID = (int)$id;
@@ -381,17 +381,17 @@ class Question
 	}# end Question() constructor
 	
 	/**
-	 * Reveals answers in internal Array of Answer Objects 
-	 * for each question 
+	 * Reveals answers in internal Array of Answer Objects
+	 * for each question
 	 *
 	 * @param none
-	 * @return string prints data from Answer Array 
+	 * @return string prints data from Answer Array
 	 * @todo none
-	 */ 
+	 */
 	function showAnswers()
 	{
 		if($this->TotalAnswers != 1){$s = 's';}else{$s = '';} #add 's' only if NOT one!!
-		echo "<em>[" . $this->TotalAnswers . " answer" . $s . "]</em> "; 
+		echo "<em>[" . $this->TotalAnswers . " answer" . $s . "]</em> ";
 		foreach($this->aAnswer as $answer)
 		{#print data for each
 			echo "<em>(" . $answer->AnswerID . ")</em> ";
@@ -407,12 +407,12 @@ class Question
 
 /**
  * Answer Class stores data info for an individual Answer
- * 
- * In the constructor an instance of the Survey class creates multiple 
- * instances of the Question class and the Answer class to store 
+ *
+ * In the constructor an instance of the Survey class creates multiple
+ * instances of the Question class and the Answer class to store
  * questions & answers.
  *
- * @see Question 
+ * @see Question
  * @todo none
  */
 class Answer
@@ -423,14 +423,14 @@ class Answer
 	public $Tallies = 0; # v5: stores number of times an answer was selected	
 
 	/**
-	 * Constructor for Answer class. 
+	 * Constructor for Answer class.
 	 *
-	 * @param integer $AnswerID ID number of answer 
+	 * @param integer $AnswerID ID number of answer
 	 * @param string $Text The text of the answer
 	 * @param string $Description Additional description info
-	 * @return void 
+	 * @return void
 	 * @todo none
-	 */ 
+	 */
     function __construct($AnswerID,$answer,$description)
 	{#constructor sets stage by adding data to an instance of the object
 		$this->AnswerID = (int)$AnswerID;

@@ -1,18 +1,18 @@
 <?php
 /**
  * response_test.php shows an entire response, after it has been created
- * 
+ *
  * Will attempt to create a response 'object' to store user entered response data.
  *
- * This is a test page to prove the concept of storage of Response data, with  
+ * This is a test page to prove the concept of storage of Response data, with
  * internal Question, Answer and Choice object data
- * 
+ *
  * @package SurveySez
  * @author Bill Newman <williamnewman@gmail.com>
  * @version 2.1 2011/11/03
- * @link http://www.billnsara.com/advdb/  
+ * @link http://www.billnsara.com/advdb/
  * @license http:// opensource.org/licenses/osl-3.0.php Open Software License ("OSL") v. 3.0
- * @see config_inc.php  
+ * @see config_inc.php
  * @todo none
  */
 
@@ -38,16 +38,16 @@ if(isset($_GET['id']) && (int)$_GET['id'] > 0){#proper data must be on querystri
   myRedirect(VIRTUAL_PATH . "surveys/index.php");
 }
 
-# currently 'hard wired' to one response - will need to pass in #id of a Response on the qstring  
+# currently 'hard wired' to one response - will need to pass in #id of a Response on the qstring
 $myResponse = new Response($myID);
 if($myResponse->isValid)
 {
 	$PageTitle = "'Response to " . $myResponse->Title . "' Survey!";
 }else{
-	$PageTitle = THIS_PAGE; #use constant 
+	$PageTitle = THIS_PAGE; #use constant
 }
 $config->titleTag = $PageTitle;
-#END CONFIG AREA ---------------------------------------------------------- 
+#END CONFIG AREA ----------------------------------------------------------
 
 get_header(); # defaults to header_inc.php
 ?>
