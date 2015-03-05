@@ -31,20 +31,6 @@ if(isset($_GET['id']) && (int)$_GET['id'] > 0){#proper data must be on querystri
 	myRedirect(VIRTUAL_PATH . "surveys/index.php");
 }
 
-/*
-If result, show result
-else if survey, show survey
-else show sorry, no survey
-
-if (result) {
-
-} else if(survey){
-
-} else {
-  echo "Sorry! No survey!";
-}
-*/
-
 $myResult = new Result($myID);
 if($myResult->isValid) {
   $PageTitle = "'Result to " . $myResult->Title . "' Survey!";
@@ -84,7 +70,5 @@ if($myResult->isValid) {# check to see if we have a valid SurveyID
     echo "Sorry, no such survey!";
   }
 }
-
-
 
 get_footer(); #defaults to theme footer or footer_inc.php
